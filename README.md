@@ -166,10 +166,14 @@ The whole script is data in `backend/flow.py`:
 - `ISSUES` — the issue catalogue: five categories, each with a `doc` (the
   knowledge-base file its answers are pinned to) and a set of problems,
   each with `steps`, a `rag_query`, and a `contact`.
+- `PHRASES` — small pools of wording (greeting, acknowledgements, issue
+  openers, sign-off) that the engine rotates through so the assistant
+  varies its phrasing and addresses the student by first name instead of
+  reading like a form.
 
 Add an issue by adding an entry to `ISSUES`; add a menu branch by adding a
-node to `NODES`. `flow_engine.py` (session state + validation + rendering)
-usually doesn't need to change.
+node to `NODES`; reword the tone by editing `PHRASES`. `flow_engine.py`
+(session state + validation + rendering) usually doesn't need to change.
 
 ## Updating the knowledge base
 
