@@ -1,0 +1,17 @@
+.git/
+.gitignore
+.venv/
+venv/
+**/__pycache__/
+*.py[cod]
+
+# Rebuilt inside the image by `python backend/ingest.py`
+data/chroma_db/
+data/tfidf_vectorizer.pkl
+data/embedding_backend.json
+
+# Runtime / local only
+data/sessions.log.jsonl
+.mcp.json
+.vscode/
+.idea/

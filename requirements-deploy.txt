@@ -1,0 +1,17 @@
+# Deployment dependencies.
+#
+# This omits sentence-transformers (and its ~1 GB torch dependency), so the
+# image stays small and runs comfortably on 512 MB free tiers. ingest.py
+# then builds the index with the TF-IDF retriever, which is self-contained
+# and needs no model download.
+#
+# On a host with >= 2 GB RAM, deploy with requirements.txt instead to get
+# neural (all-MiniLM-L6-v2) embeddings and sharper retrieval.
+
+chromadb>=1.5.0
+scikit-learn>=1.8.0
+numpy>=2.0.0
+
+fastapi>=0.141.0
+uvicorn>=0.46.0
+pydantic>=2.13.0

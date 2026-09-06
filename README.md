@@ -113,6 +113,43 @@ uvicorn backend.main:app --reload --port 8000
 Then open **http://localhost:8000/** in a browser. That's it — the FastAPI
 app serves both the API and the chat page, so there's nothing else to start.
 
+## Deploy it online
+
+The repo ships a `Dockerfile` that installs `requirements-deploy.txt` (the
+core deps without `sentence-transformers`), bakes the vector index into the
+image with `ingest.py`, and serves on `$PORT`. It runs unchanged on any
+container host and fits 512 MB free tiers (using the TF-IDF retriever).
+
+**Render** (free, no card) — easiest:
+
+1. Push this repo to GitHub/GitLab.
+2. Render dashboard → **New → Blueprint** → pick the repo. It reads
+   `render.yaml` and deploys the Docker service.
+3. Optional: add a `GROQ_API_KEY` environment variable in the Render
+   dashboard for AI-generated answers.
+4. Your app is at `https://<name>.onrender.com/`. (Free instances sleep
+   after 15 min idle; the first request then takes ~1 min to wake.)
+
+**Any other Docker host** (Fly.io, Google Cloud Run, Railway, a VPS):
+
+```bash
+docker build -t pentvars-rag .
+docker run -p 8000:8000 -e GROQ_API_KEY=your-key pentvars-rag   # key optional
+```
+
+**Hugging Face Spaces** (free, 16 GB RAM — enough for the neural embedder):
+create a **Docker** Space from the repo, and either change the Dockerfile to
+`COPY requirements.txt` / `pip install -r requirements.txt`, or leave it as
+is for TF-IDF. Set `app_port` to `8000` in the Space settings.
+
+Notes:
+
+- CORS is wide open (`allow_origins=["*"]`) — fine for a demo; lock it down
+  in `backend/main.py` before anything public-facing that matters.
+- Sessions are in-memory, so a redeploy or a second instance loses them.
+  That's acceptable for a single-instance demo; move `flow_engine._SESSIONS`
+  to Redis if you ever scale out.
+
 ## 4. Try it
 
 The chat page opens a **guided flow**:

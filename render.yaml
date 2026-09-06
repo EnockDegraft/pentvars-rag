@@ -1,0 +1,15 @@
+# Render blueprint — https://render.com
+# In the Render dashboard: New > Blueprint, point it at this repo, deploy.
+services:
+  - type: web
+    name: pentvars-rag
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    envVars:
+      # Optional: set this in the Render dashboard to get AI-generated
+      # answers instead of raw excerpts. Leave unset and the app still
+      # works in extractive mode.
+      - key: GROQ_API_KEY
+        sync: false
