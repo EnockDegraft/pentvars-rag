@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Build artifacts — recreate with `python backend/ingest.py`
+data/chroma_db/
+data/tfidf_vectorizer.pkl
+data/embedding_backend.json
+
+# Runtime state
+data/sessions.log.jsonl
+
+# Local overrides / secrets
+.env
+.env.*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

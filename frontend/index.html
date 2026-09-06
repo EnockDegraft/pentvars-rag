@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pentecost University — Institutional Knowledge Assistant</title>
+<style>
+  :root {
+    --pu-blue: #0b3d91;
+    --pu-blue-dark: #082a66;
+    --bg: #f4f6fb;
+    --bubble-user: #0b3d91;
+    --bubble-bot: #ffffff;
+    --border: #dde3ee;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    height: 100vh;
+    height: 100dvh;            /* mobile: exclude the browser URL bar so the input stays visible */
+    display: flex;
+    flex-direction: column;
+    -webkit-tap-highlight-color: transparent;
+  }
+  header {
+    background: var(--pu-blue);
+    color: white;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    padding-top: calc(16px + env(safe-area-inset-top));
+  }
+  header > div:nth-child(2) { min-width: 0; flex: 1; }   /* title column shrinks/wraps instead of overflowing */
+  header .logo {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: white;
+    color: var(--pu-blue);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 15px;
+    flex-shrink: 0;
+  }
+  header h1, header h3 { font-size: 16px; margin: 0; font-weight: 600; line-height: 1.3; }
+  header p { margin: 2px 0 0; font-size: 12px; opacity: 0.85; }
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  #status-pill {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.15);
+    white-space: nowrap;
+  }
+  #restart-btn {
+    font-size: 11px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    border: 1px solid rgba(255,255,255,0.35);
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  #restart-btn:hover { background: rgba(255,255,255,0.28); }
+  #profile-bar {
+    max-width: 820px;
+    width: 100%;
+    margin: 10px auto 0;
+    padding: 0 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .profile-chip {
+    background: #e8edf9;
+    color: var(--pu-blue-dark);
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    max-width: 820px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .msg { display: flex; flex-direction: column; max-width: 78%; }
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg.bot { align-self: flex-start; align-items: flex-start; }
+  .bubble {
+    padding: 12px 16px;
+    border-radius: 14px;
+    line-height: 1.5;
+    font-size: 14.5px;
+    white-space: pre-wrap;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+  }
+  .msg.user .bubble { background: var(--bubble-user); color: white; border-bottom-right-radius: 4px; }
+  .msg.bot .bubble { background: var(--bubble-bot); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+  .bubble strong { font-weight: 700; }
+  .bubble.prompt { background: #eef2fb; border-color: #d3ddf3; font-weight: 600; }
+  .sources {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #556;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .source-chip {
+    background: #e8edf9;
+    color: var(--pu-blue-dark);
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11.5px;
+  }
+  .mode-note {
+    margin-top: 4px;
+    font-size: 11px;
+    color: #8a8f9e;
+    font-style: italic;
+  }
+  #options {
+    max-width: 820px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 20px 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .option-btn {
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--pu-blue-dark);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .option-btn:hover { background: #eef2fb; }
+  .option-btn.back { color: #667; }
+  #input-bar {
+    border-top: 1px solid var(--border);
+    background: white;
+    padding: 14px 20px;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    display: flex;
+    gap: 10px;
+    max-width: 820px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  #question {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    font-size: 16px;          /* >=16px stops iOS Safari zooming in on focus */
+    outline: none;
+  }
+  #question:focus { border-color: var(--pu-blue); }
+  #question:disabled { background: #f2f4f8; color: #99a; }
+  #send-btn {
+    background: var(--pu-blue);
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #send-btn:disabled { opacity: 0.5; cursor: default; }
+  #send-btn:hover:not(:disabled) { background: var(--pu-blue-dark); }
+  .typing { display: flex; gap: 4px; padding: 4px 0; }
+  .typing span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #99a3b8;
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce { 0%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-5px); } }
+
+  .option-btn, #send-btn, #restart-btn { touch-action: manipulation; }
+
+  /* --- tablet / narrow desktop: tighten the side gutters ------------- */
+  @media (max-width: 720px) {
+    #chat, #options, #input-bar, #profile-bar { padding-left: 14px; padding-right: 14px; }
+    .msg { max-width: 86%; }
+  }
+
+  /* --- phones ------------------------------------------------------- */
+  @media (max-width: 520px) {
+    /* two rows: [logo + title] then [status pill + Start over], right-aligned */
+    header { padding: 10px 14px; padding-top: calc(10px + env(safe-area-inset-top)); gap: 8px; flex-wrap: wrap; align-items: center; }
+    header .logo { width: 30px; height: 30px; font-size: 13px; }
+    header > div:nth-child(2) { flex: 1 1 auto; }
+    header h1, header h3 { font-size: 14px; line-height: 1.25; }
+    header p { display: none; }
+    .header-right { flex-basis: 100%; margin-left: 0; margin-top: 4px; justify-content: flex-end; gap: 6px; }
+    #status-pill {
+      font-size: 10px; padding: 3px 8px; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #restart-btn { font-size: 10px; padding: 5px 9px; flex-shrink: 0; }
+
+    #profile-bar { margin-top: 8px; gap: 6px; }
+    .profile-chip { font-size: 11px; padding: 4px 9px; }
+
+    #chat { padding: 14px 12px; gap: 10px; }
+    #options, #input-bar, #profile-bar { padding-left: 12px; padding-right: 12px; }
+    .msg { max-width: 92%; }
+    .bubble { font-size: 14px; padding: 10px 13px; }
+
+    #options { gap: 6px; padding-bottom: 8px; }
+    .option-btn { padding: 10px 14px; font-size: 13px; }   /* larger tap target */
+
+    #input-bar { padding: 10px 12px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); gap: 8px; }
+    #send-btn { padding: 0 16px; }
+  }
+
+  @media (hover: none) {
+    .option-btn:hover { background: white; }        /* no sticky hover state on touch */
+    .option-btn:active { background: #e4ebf9; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">PU</div>
+  <div>
+    <h3>Pentecost University Institutional Knowledge Assistant</h3>
+    <p>Retrieval-Augmented Generation demo — final year project</p>
+  </div>
+  <div class="header-right">
+    <div id="status-pill">checking backend…</div>
+    <button id="restart-btn" type="button">Start over</button>
+  </div>
+</header>
+
+<div id="profile-bar"></div>
+<div id="chat"></div>
+<div id="options"></div>
+
+<div id="input-bar">
+  <input id="question" type="text" placeholder="Type here…" autocomplete="off" />
+  <button id="send-btn" type="button">Send</button>
+</div>
+
+<script>
+  const API_BASE = ""; // same-origin: served by the FastAPI backend
+  const chat = document.getElementById("chat");
+  const optionsEl = document.getElementById("options");
+  const profileBar = document.getElementById("profile-bar");
+  const questionInput = document.getElementById("question");
+  const sendBtn = document.getElementById("send-btn");
+  const restartBtn = document.getElementById("restart-btn");
+  const statusPill = document.getElementById("status-pill");
+
+  const state = { sessionId: null, expect: "text", options: [], busy: false };
+
+  // --- rendering helpers ------------------------------------------------
+
+  function escapeHtml(s) {
+    return s.replace(/[&<>"']/g, c => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+
+  // our own flow text is trusted-shape but still escaped; we only re-enable
+  // **bold**. RAG answers are rendered as plain text (see addAnswer).
+  function richText(s) {
+    return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  }
+
+  function addUser(text) {
+    const wrap = document.createElement("div");
+    wrap.className = "msg user";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
+    wrap.appendChild(bubble);
+    chat.appendChild(wrap);
+    scrollDown();
+  }
+
+  function addBotText(text, isPrompt) {
+    const wrap = document.createElement("div");
+    wrap.className = "msg bot";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble" + (isPrompt ? " prompt" : "");
+    bubble.innerHTML = richText(text);
+    wrap.appendChild(bubble);
+    chat.appendChild(wrap);
+    scrollDown();
+  }
+
+  function addAnswer(answer, sources, mode) {
+    const wrap = document.createElement("div");
+    wrap.className = "msg bot";
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = answer;           // plain text, exactly as returned
+    wrap.appendChild(bubble);
+
+    if (sources && sources.length) {
+      const srcWrap = document.createElement("div");
+      srcWrap.className = "sources";
+      sources.forEach(s => {
+        const chip = document.createElement("span");
+        chip.className = "source-chip";
+        chip.textContent = "📄 " + s.title;
+        srcWrap.appendChild(chip);
+      });
+      wrap.appendChild(srcWrap);
+    }
+
+    const notes = {
+      extractive_fallback: "Extractive mode (no LLM API key configured) — showing the raw retrieved excerpt.",
+      groq_error: "LLM call failed — showing the raw retrieved excerpt instead.",
+    };
+    if (notes[mode]) {
+      const note = document.createElement("div");
+      note.className = "mode-note";
+      note.textContent = notes[mode];
+      wrap.appendChild(note);
+    }
+
+    chat.appendChild(wrap);
+    scrollDown();
+  }
+
+  function addTyping() {
+    const wrap = document.createElement("div");
+    wrap.className = "msg bot";
+    wrap.id = "typing-indicator";
+    const bubble = document.createElement("div");
+    bubble.className = "bubble typing";
+    bubble.innerHTML = "<span></span><span></span><span></span>";
+    wrap.appendChild(bubble);
+    chat.appendChild(wrap);
+    scrollDown();
+  }
+  function removeTyping() {
+    const el = document.getElementById("typing-indicator");
+    if (el) el.remove();
+  }
+  function scrollDown() { chat.scrollTop = chat.scrollHeight; }
+
+  function renderProfile(profile) {
+    profileBar.innerHTML = "";
+    if (!profile) return;
+    if (profile.name) {
+      const c = document.createElement("span");
+      c.className = "profile-chip";
+      c.textContent = "👤 " + profile.name;
+      profileBar.appendChild(c);
+    }
+    if (profile.index_number) {
+      const c = document.createElement("span");
+      c.className = "profile-chip";
+      c.textContent = "🆔 " + profile.index_number;
+      profileBar.appendChild(c);
+    }
+  }
+
+  function renderOptions() {
+    optionsEl.innerHTML = "";
+    if (state.expect !== "choice") return;
+    state.options.forEach(opt => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "option-btn";
+      if (/^back\b/i.test(opt.label) || /main menu$/i.test(opt.label)) btn.classList.add("back");
+      btn.textContent = opt.label;
+      btn.addEventListener("click", () => choose(opt.id, opt.label));
+      optionsEl.appendChild(btn);
+    });
+  }
+
+  function applyInputMode() {
+    if (state.expect === "end") {
+      questionInput.disabled = true;
+      sendBtn.disabled = true;
+      questionInput.placeholder = "Session ended — press \"Start over\".";
+    } else if (state.expect === "choice") {
+      questionInput.disabled = false;
+      sendBtn.disabled = state.busy;
+      questionInput.placeholder = "Pick an option above, or type a question…";
+    } else {
+      questionInput.disabled = false;
+      sendBtn.disabled = state.busy;
+      questionInput.placeholder = state.hint ? state.hint : "Type here…";
+    }
+  }
+
+  // --- turn handling -------------------------------------------------
+
+  function renderTurn(data) {
+    (data.messages || []).forEach(m => {
+      if (m.kind === "answer") addAnswer(m.answer, m.sources, m.mode);
+      else addBotText(m.text, false);
+    });
+    if (data.prompt) addBotText(data.prompt, true);
+
+    state.sessionId = data.session_id;
+    state.expect = data.expect;
+    state.options = data.options || [];
+    state.hint = data.hint;
+    renderProfile(data.profile);
+    renderOptions();
+    applyInputMode();
+    if (state.expect === "text") questionInput.focus();
+  }
+
+  async function startSession() {
+    setBusy(true);
+    chat.innerHTML = "";
+    optionsEl.innerHTML = "";
+    profileBar.innerHTML = "";
+    try {
+      const res = await fetch(API_BASE + "/api/flow/start", { method: "POST" });
+      const data = await res.json();
+      renderTurn(data);
+    } catch (err) {
+      addBotText("Couldn't reach the backend to start a session. Is the server running? (" + err + ")");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function send(input, echoLabel) {
+    if (state.busy || !state.sessionId) return;
+    if (echoLabel) addUser(echoLabel);
+    setBusy(true);
+    addTyping();
+    try {
+      const res = await fetch(API_BASE + "/api/flow/next", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: state.sessionId, input: String(input) }),
+      });
+      removeTyping();
+      if (res.status === 404) {
+        addBotText("That session expired — starting a fresh one.");
+        setBusy(false);
+        return startSession();
+      }
+      const data = await res.json();
+      renderTurn(data);
+    } catch (err) {
+      removeTyping();
+      addBotText("Sorry, I couldn't reach the backend. Is the server running? (" + err + ")");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function choose(id, label) { send(id, label); }
+
+  function submitTyped() {
+    const q = questionInput.value.trim();
+    if (!q) return;
+    questionInput.value = "";
+    send(q, q);
+  }
+
+  function setBusy(v) {
+    state.busy = v;
+    applyInputMode();
+    if (v) sendBtn.disabled = true;
+  }
+
+  sendBtn.addEventListener("click", submitTyped);
+  questionInput.addEventListener("keydown", (e) => { if (e.key === "Enter") submitTyped(); });
+  restartBtn.addEventListener("click", startSession);
+
+  // --- boot -------------------------------------------------------
+  fetch(API_BASE + "/api/health").then(r => r.json()).then(data => {
+    statusPill.textContent = "index: " + data.embedding_backend +
+      " · answers: " + (data.llm_backend.startsWith("groq") ? "AI-generated" : "extractive");
+  }).catch(() => { statusPill.textContent = "backend unreachable"; });
+
+  startSession();
+</script>
+
+</body>
+</html>
