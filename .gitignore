@@ -25,4 +25,6 @@ data/sessions.log.jsonl
 .vscode/
 .idea/
 .DS_Store
+
+
 Thumbs.db
