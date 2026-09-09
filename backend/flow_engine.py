@@ -115,6 +115,18 @@ def _pick(session, pool_name):
 
 # --- validation ---------------------------------------------------------
 
+# Things people type instead of a real name — reject so the assistant
+# doesn't end up calling the student "Hi".
+_NOT_A_NAME = {
+    "hi", "hii", "hey", "heyy", "hello", "helo", "yo", "sup", "wassup",
+    "hola", "hiya", "howdy", "morning", "afternoon", "evening",
+    "good morning", "good afternoon", "good evening", "good day",
+    "test", "testing", "asdf", "qwerty", "name", "my name", "student",
+    "none", "na", "n/a", "nil", "me", "idk", "nobody", "anonymous", "user",
+    "who", "what", "why", "ok", "okay",
+}
+
+
 def _validate(kind, raw):
     """Return (ok: bool, cleaned: str, message: str)."""
     text = (raw or "").strip()
@@ -123,6 +135,10 @@ def _validate(kind, raw):
             return False, text, "I didn't quite catch that — what's your name?"
         if len(text) > 80:
             return False, text, "That's a long one! Could you give me a shorter version of your name?"
+        if re.sub(r"[\s.!?,]+", " ", text).strip().lower() in _NOT_A_NAME:
+            return False, text, (
+                "I need your name to sign you in \U0001F642 — what should I call you?"
+            )
         return True, re.sub(r"\s+", " ", text).title(), ""
     if kind == "index_number":
         cleaned = re.sub(r"\s+", "", text).upper()

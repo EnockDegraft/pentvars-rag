@@ -31,7 +31,7 @@ GROQ_MODEL = "openai/gpt-oss-20b"
 # request lean: trim each retrieved chunk before putting it in the prompt,
 # and cap the answer length.
 MAX_CHUNK_CHARS = 700
-MAX_ANSWER_TOKENS = 500
+MAX_ANSWER_TOKENS = 700
 
 SYSTEM_PROMPT = (
     "You are the Pentecost University Institutional Knowledge Assistant. "

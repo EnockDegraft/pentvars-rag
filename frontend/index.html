@@ -119,6 +119,15 @@
   .msg.bot .bubble { background: var(--bubble-bot); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
   .bubble strong { font-weight: 700; }
   .bubble.prompt { background: #eef2fb; border-color: #d3ddf3; font-weight: 600; }
+  .bubble.rich { white-space: normal; }
+  .bubble.rich > :first-child { margin-top: 0; }
+  .bubble.rich > :last-child { margin-bottom: 0; }
+  .bubble.rich p { margin: 0 0 8px; }
+  .bubble.rich ul, .bubble.rich ol { margin: 4px 0 8px; padding-left: 20px; }
+  .bubble.rich li { margin: 2px 0; }
+  .bubble.rich h4 { margin: 10px 0 4px; font-size: 14px; font-weight: 700; }
+  .bubble.rich code { background: #eef2f7; padding: 1px 4px; border-radius: 4px; font-size: 90%; }
+  .bubble.rich a { color: var(--pu-blue); word-break: break-word; }
   .sources {
     margin-top: 6px;
     font-size: 12px;
@@ -292,10 +301,49 @@
     ));
   }
 
-  // our own flow text is trusted-shape but still escaped; we only re-enable
-  // **bold**. RAG answers are rendered as plain text (see addAnswer).
-  function richText(s) {
-    return escapeHtml(s).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+  // A small Markdown renderer for bot bubbles. Everything is HTML-escaped
+  // first, then a safe subset is re-enabled: **bold**, *italic*, `code`,
+  // [text](url) and bare links, # headings, and - / 1. lists.
+  function mdInline(t) {
+    return escapeHtml(t)
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+               '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+      .replace(/(^|[\s(])(https?:\/\/[^\s<)]+[^\s<).,!?;:])/g,
+               '$1<a href="$2" target="_blank" rel="noopener noreferrer">$2</a>')
+      .replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>")
+      .replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, "$1<em>$2</em>")
+      .replace(/`([^`]+?)`/g, "<code>$1</code>");
+  }
+  function renderMarkdown(src) {
+    try {
+      const lines = String(src).replace(/\r\n/g, "\n").split("\n");
+      const out = [];
+      let list = null, para = [];
+      const flushP = () => { if (para.length) { out.push("<p>" + para.join("<br>") + "</p>"); para = []; } };
+      const flushL = () => { if (list) { out.push("</" + list + ">"); list = null; } };
+      for (const raw of lines) {
+        const line = raw.replace(/\s+$/, "");
+        if (!line.trim()) { flushP(); flushL(); continue; }
+        let m;
+        if ((m = line.match(/^\s*#{1,6}\s+(.*)$/))) {
+          flushP(); flushL(); out.push("<h4>" + mdInline(m[1]) + "</h4>");
+        } else if ((m = line.match(/^\s*[-*•]\s+(.*)$/))) {
+          flushP();
+          if (list !== "ul") { flushL(); out.push("<ul>"); list = "ul"; }
+          out.push("<li>" + mdInline(m[1]) + "</li>");
+        } else if ((m = line.match(/^\s*\d+[.)]\s+(.*)$/))) {
+          flushP();
+          if (list !== "ol") { flushL(); out.push("<ol>"); list = "ol"; }
+          out.push("<li>" + mdInline(m[1]) + "</li>");
+        } else {
+          flushL(); para.push(mdInline(line.trim()));
+        }
+      }
+      flushP(); flushL();
+      return out.join("");
+    } catch (e) {
+      return escapeHtml(String(src));
+    }
   }
 
   function addUser(text) {
@@ -313,8 +361,8 @@
     const wrap = document.createElement("div");
     wrap.className = "msg bot";
     const bubble = document.createElement("div");
-    bubble.className = "bubble" + (isPrompt ? " prompt" : "");
-    bubble.innerHTML = richText(text);
+    bubble.className = "bubble rich" + (isPrompt ? " prompt" : "");
+    bubble.innerHTML = renderMarkdown(text);
     wrap.appendChild(bubble);
     chat.appendChild(wrap);
     scrollDown();
@@ -325,8 +373,8 @@
     wrap.className = "msg bot";
 
     const bubble = document.createElement("div");
-    bubble.className = "bubble";
-    bubble.textContent = answer;           // plain text, exactly as returned
+    bubble.className = "bubble rich";
+    bubble.innerHTML = renderMarkdown(answer);   // model output is Markdown
     wrap.appendChild(bubble);
 
     if (sources && sources.length) {
