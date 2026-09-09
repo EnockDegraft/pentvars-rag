@@ -27,6 +27,12 @@ GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 # for the current list. gpt-oss-20b is a small, fast, free-tier instruction model.
 GROQ_MODEL = "openai/gpt-oss-20b"
 
+# Groq's free tier caps tokens-per-minute (~8k for this model), so keep each
+# request lean: trim each retrieved chunk before putting it in the prompt,
+# and cap the answer length.
+MAX_CHUNK_CHARS = 700
+MAX_ANSWER_TOKENS = 500
+
 SYSTEM_PROMPT = (
     "You are the Pentecost University Institutional Knowledge Assistant. "
     "Answer the user's question using ONLY the information in the numbered "
@@ -40,7 +46,7 @@ SYSTEM_PROMPT = (
 
 def _build_user_prompt(question, context_chunks):
     context_block = "\n\n".join(
-        f"[{i + 1}] (Source: {c['metadata']['title']})\n{c['document']}"
+        f"[{i + 1}] (Source: {c['metadata']['title']})\n{c['document'][:MAX_CHUNK_CHARS]}"
         for i, c in enumerate(context_chunks)
     )
     return f"Context excerpts:\n\n{context_block}\n\nQuestion: {question}"
@@ -54,7 +60,7 @@ def _call_groq(question, context_chunks, api_key):
             {"role": "user", "content": _build_user_prompt(question, context_chunks)},
         ],
         "temperature": 0.2,
-        "max_tokens": 600,
+        "max_tokens": MAX_ANSWER_TOKENS,
     }
     req = urllib.request.Request(
         GROQ_API_URL,
@@ -119,11 +125,18 @@ def generate_answer(question, context_chunks):
             return _call_groq(question, context_chunks, api_key), "groq"
         except urllib.error.HTTPError as e:
             error_body = e.read().decode("utf-8", errors="replace")
-            return (
-                f"The Groq API returned an error ({e.code}): {error_body}\n\n"
-                "Falling back to the retrieved excerpt below.\n\n"
-                + _extractive_fallback(question, context_chunks)
-            ), "groq_error"
+            if e.code == 429:
+                note = (
+                    "The Groq free tier is rate-limited at the moment (too many "
+                    "requests in a short time). Showing the retrieved excerpt "
+                    "instead — try again in a minute for an AI-written answer."
+                )
+            else:
+                note = (
+                    f"The Groq API returned an error ({e.code}): {error_body}\n\n"
+                    "Falling back to the retrieved excerpt below."
+                )
+            return (note + "\n\n" + _extractive_fallback(question, context_chunks)), "groq_error"
         except Exception as e:
             return (
                 f"Could not reach the Groq API ({e.__class__.__name__}: {e}).\n\n"

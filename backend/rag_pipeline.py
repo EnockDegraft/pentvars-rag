@@ -26,15 +26,15 @@ ROOT = os.path.dirname(HERE)
 CHROMA_DIR = os.path.join(ROOT, "data", "chroma_db")
 COLLECTION_NAME = "pentvars_knowledge_base"
 
-TOP_K = 8                      # how many chunks to retrieve
+TOP_K = 6                      # how many chunks to retrieve
 #
-# 8 rather than a tighter 3-4: on this small knowledge base the MiniLM
-# embeddings cluster many generic "about the university" chunks close
-# together, so the single on-point document for a question (e.g. the
-# programme list for "what programmes are offered?") can sit at rank 5-6.
-# The distance threshold below still filters out genuinely off-topic
-# chunks, and the LLM prompt tells the model to use only what's relevant
-# and to cite it, so a few extra near-misses in context are harmless.
+# 6 rather than a tighter 3-4: on this knowledge base the MiniLM embeddings
+# cluster many generic "about the university" chunks close together, so the
+# single on-point document for a question (e.g. the programme list for
+# "what programmes are offered?") can sit at rank 5-6. 6 catches those
+# while keeping the LLM prompt small enough for the Groq free tier's
+# per-minute token budget. The distance threshold still filters genuinely
+# off-topic chunks, and the LLM prompt says to use only what's relevant.
 
 # Chunks weaker (further away) than this are treated as "not relevant", which
 # is how off-topic questions ("what's the capital of France?") get rejected

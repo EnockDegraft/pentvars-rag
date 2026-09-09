@@ -214,16 +214,20 @@ node to `NODES`; reword the tone by editing `PHRASES`. `flow_engine.py`
 
 ## Updating the knowledge base
 
-The content lives in `data/raw/` as plain Markdown files, one per topic
-area — about/vision, entry requirements, academic programmes, tuition and
-fees, student life, contact info, the four scholarship types plus the
-application process, and five student-services areas (portal & IT, fee
-problems, results & transcripts, registration & ID, accommodation &
-library). Each file ends with a `Source:` line citing the page it came from
-on pentvars.edu.gh; the service-desk procedures are representative of
-typical university processes and should be confirmed against current
-official notices before real use. To add more knowledge (e.g. a specific
-faculty's page, an FAQ, exam regulations):
+The content lives in `data/raw/` as ~35 plain Markdown files, one per topic
+area — history & leadership, administration, the faculties, undergraduate
+and postgraduate programmes, admission procedure and entry requirements
+(including the mature route), international students and immigration,
+tuition and postgraduate fees, the four scholarship types, the library,
+student support offices (dean, counselling, chaplaincy, mentorship),
+student life (SRC, clubs, sports), accommodation, the academic calendar,
+research centres, contacts and helplines, plus a set of service-desk
+"how do I fix X" guides. Most files were built by reading pentvars.edu.gh
+and end with a `Source:` line citing the page(s); the service-desk
+procedures are representative of typical university processes and should be
+confirmed against current official notices before real use. To add more
+knowledge (e.g. a specific faculty's course list, an FAQ, exam
+regulations):
 
 1. Add a new `.md` file to `data/raw/` (start it with a `# Title` heading).
 2. Re-run `python3 backend/ingest.py` to rebuild the index.

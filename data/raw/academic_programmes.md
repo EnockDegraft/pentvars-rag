@@ -1,66 +1,71 @@
-# Academic Programmes — Pentecost University
+# Undergraduate Programmes — Pentecost University
 
-## Postgraduate Programmes
+Undergraduate (Bachelor's) programmes are offered across five faculties/
+schools. Award types: BEng (engineering), BSc (science/business),
+BA (arts), BEd (education), LLB (law).
 
-### Doctoral (PhD)
-- PhD in Leadership & Governance
-- PhD Engineering
-- PhD Theology & Mission
-
-### Master's Degrees
-- MSc Intelligent Engineering Systems
-- MSc Health Policy, Planning & Management
-- MBA (Finance, Human Resource Management, Marketing, Project Management, Logistics & Supply Chain Management)
-- MA Theology
-- MA Church Leadership & Administration
-- MA Pentecostal Studies
-- MA Special Needs Education
-- MPhil Theology
-- MPhil Taxation
-- MCOM Taxation
-
-## Undergraduate Programmes
-
-### Faculty of Engineering, Science and Computing
+## Faculty of Engineering, Science and Computing (FESAC)
+Department of Engineering:
 - BEng Electrical & Electronic Engineering
+- BEng Environmental Engineering
 - BEng Manufacturing Engineering
-- BEng Robotics & Automation
+- BEng Robotics & Automation Engineering
 - BEng Systems Engineering
-- BSc Construction Technology
+
+Department of the Built Environment:
+- BSc Construction Technology and Engineering Management
+- BSc Quantity Surveying and Building/Construction Economics
+
+Department of Information Technology:
 - BSc Information Technology
 - BSc Industrial Software Engineering
-- BSc Quantity Surveying
+
+Also offered in this faculty:
 - BSc Actuarial Science
+- Pre-Tertiary / Pre-Tertiary Engineering Programme (foundation)
 
-### Faculty of Business Administration
-- BSc Business Administration (Accounting, Banking & Finance, Logistics, Marketing options)
-- Bachelor of Commerce
-- BSc Human Resource Management
-- BA Communication Studies
-- BA Philosophy, Politics and Economics
+## Faculty of Business Administration (FBA)
+Department of Accounting and Finance:
+- Bachelor of Commerce (including Accounting with Computing)
+- BSc Business Administration (Accounting)
+- BSc Business Administration (Banking & Finance)
+
+Department of Economics, Marketing and Services:
+- BSc Business Administration (Marketing)
+- BSc Business Administration (Logistics & Supply Chain Management)
 - BSc Agribusiness
+- BA Communication Studies
+- BA Philosophy, Politics and Economics (PPE)
 
-### Faculty of Health and Allied Sciences
-- Doctor of Herbal Medicine
-- BSc Midwifery
+Department of Management:
+- BSc Human Resource Management
+
+## Faculty of Health and Allied Sciences (FHAS)
+Department of Nursing and Midwifery:
 - BSc Nursing
+- BSc Midwifery
+
+Department of Physician Assistantship:
+- BSc Physician Assistantship Studies (Medical)
+
+Also offered / planned in this faculty:
+- Doctor of Herbal Medicine
 - BSc Health Information Management
 
-### Faculty of Law
+## Faculty of Law
 - Bachelor of Laws (LLB)
 - Pre-Bar Course
 
-### Faculty of Education
+## Faculty of Education
 - BEd Early Childhood Education
 
-### Pentecost School of Theology and Mission
-- BA Theology (multiple specialisation options)
-- Diplomas and Certificates in theology-related fields
+## School of Theology, Mission & Leadership (STML)
+- BA Theology, with options in Theology, Mission Studies and Biblical Studies
+- Diploma in Theology & Pastoral Studies
 
-### College of Foundation and Professional Studies
-- Certificate in Mortuary Science
-- Certificate in Early Childhood Education
-- Certificate in Business Management
-- Various professional diplomas and internationally recognised certifications
+Programme durations are typically four years for a Bachelor's degree
+(entry at Level 100), or shorter with advanced standing (e.g. HND/diploma
+holders may enter at Level 200, some Nursing routes at Level 300). Confirm
+the exact structure for a programme with the relevant faculty.
 
-Source: https://pentvars.edu.gh/academics/programmes/
+Source: https://pentvars.edu.gh/academics/programmes/?type=undergraduate and the faculty pages under https://pentvars.edu.gh/faculty/
