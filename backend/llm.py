@@ -5,8 +5,10 @@ llm.py — Pluggable answer-generation backend.
 
 Primary path: Groq's free API (https://console.groq.com). Groq gives every
 account a generous free tier (no credit card required) and serves fast,
-capable open models like Llama 3.1 — a good fit for a student project. Set
-the GROQ_API_KEY environment variable to enable it.
+capable open-weight models (gpt-oss, Qwen, Llama) — a good fit for a student
+project. Set the GROQ_API_KEY environment variable to enable it. Groq
+rotates its model line-up, so if GROQ_MODEL 404s, check the current list at
+https://console.groq.com/docs/models (or GET /openai/v1/models).
 
 Fallback path: if no GROQ_API_KEY is set (e.g. while first testing the
 system, or on a machine with no internet access at all), the system does
@@ -21,7 +23,9 @@ import urllib.request
 import urllib.error
 
 GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
-GROQ_MODEL = "llama-3.1-8b-instant"
+# Groq rotates its hosted model line-up; check https://console.groq.com/docs/models
+# for the current list. gpt-oss-20b is a small, fast, free-tier instruction model.
+GROQ_MODEL = "openai/gpt-oss-20b"
 
 SYSTEM_PROMPT = (
     "You are the Pentecost University Institutional Knowledge Assistant. "
@@ -58,6 +62,11 @@ def _call_groq(question, context_chunks, api_key):
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
+            # Groq's API is behind Cloudflare, which 403s the default
+            # "Python-urllib/x" User-Agent (Cloudflare error 1010). Send a
+            # plain descriptive UA so the request gets through.
+            "User-Agent": "pentvars-rag/1.0 (+https://github.com/EnockDegraft/pentvars-rag)",
+            "Accept": "application/json",
         },
         method="POST",
     )
