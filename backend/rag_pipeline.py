@@ -20,21 +20,23 @@ import chromadb
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from embeddings import load_embedder_for_query
 from llm import generate_answer
+import smalltalk
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 CHROMA_DIR = os.path.join(ROOT, "data", "chroma_db")
 COLLECTION_NAME = "pentvars_knowledge_base"
 
-TOP_K = 6                      # how many chunks to retrieve
+TOP_K = 8                      # how many chunks to retrieve
 #
-# 6 rather than a tighter 3-4: on this knowledge base the MiniLM embeddings
+# 8 rather than a tighter 3-4: on this knowledge base the MiniLM embeddings
 # cluster many generic "about the university" chunks close together, so the
 # single on-point document for a question (e.g. the programme list for
-# "what programmes are offered?") can sit at rank 5-6. 6 catches those
-# while keeping the LLM prompt small enough for the Groq free tier's
-# per-minute token budget. The distance threshold still filters genuinely
-# off-topic chunks, and the LLM prompt says to use only what's relevant.
+# "what programmes are offered?") can sit at rank 5-6. llm.py trims each
+# chunk before building the prompt, so 8 chunks still fit the Groq free
+# tier's per-minute token budget. The distance threshold still filters
+# genuinely off-topic chunks, and the prompt says to use only what's
+# relevant.
 
 # Chunks weaker (further away) than this are treated as "not relevant", which
 # is how off-topic questions ("what's the capital of France?") get rejected
@@ -112,6 +114,14 @@ def answer_question(question: str, source: str = None) -> dict:
             "sources": [],
             "mode": "no_question",
         }
+
+    # Greetings, "how are you?", "thanks", "who are you?", "bye" — reply
+    # socially instead of running retrieval. Skipped for source-pinned calls
+    # (the guided scholarship/issue steps), which always pass a real query.
+    if source is None:
+        chit_chat = smalltalk.respond(question)
+        if chit_chat:
+            return {"answer": chit_chat, "sources": [], "mode": "smalltalk"}
 
     chunks = retrieve(question, source=source)
 

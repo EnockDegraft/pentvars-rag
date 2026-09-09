@@ -1,33 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-flow_engine.py — Runs the guided conversation defined in flow.py.
-
-State is a small in-memory dict per student session:
-    { session_id: {name, first_name, index_number, node, created_at,
-                   last_seen, _seen_menu, _last_phrase} }
-
-In-memory is deliberate: this is a single-process student demo, not a
-multi-tenant service. Sessions expire after a few hours and the store is
-capped, so it can't grow without bound. If this were ever deployed for real,
-this is the one place to swap in Redis or a database.
-
-Public API:
-    start_session()               -> (session_id, render_dict)
-    advance(session_id, user_text) -> render_dict
-    get_profile(session_id)        -> {name, index_number} or None
-
-`render_dict` is what the frontend needs to draw the next turn:
-    {
-      session_id, node, done,
-      messages: [ {kind: "text", text} | {kind: "answer", answer, sources, mode} ],
-      expect:   "text" | "choice" | "end",
-      prompt:   str,
-      options:  [ {id, label} ],      # when expect == "choice"
-      hint:     str | None,           # input placeholder when expect == "text"
-      profile:  {name, index_number}
-    }
-"""
 import os
 import re
 import json
@@ -315,7 +285,8 @@ def advance(session_id, user_text):
                 out["messages"].insert(0, {"kind": "text", "text": "Go ahead — type a question and I'll look it up."})
                 return out
             rag = answer_question(user_text)
-            extra.append({"kind": "text", "text": _fmt(_pick(session, "found_leads"), session)})
+            if rag["mode"] != "smalltalk":
+                extra.append({"kind": "text", "text": _fmt(_pick(session, "found_leads"), session)})
             extra.append({
                 "kind": "answer",
                 "answer": rag["answer"],
@@ -343,7 +314,8 @@ def advance(session_id, user_text):
         session["node"] = chosen["next"]
         return _render(session, extra_messages=extra)
 
-    # free text typed at a menu -> treat it as a question, stay on this node
+    # free text typed at a menu -> treat it as a question (or small talk),
+    # stay on this node
     if user_text:
         rag = answer_question(user_text)
         out = _render(session)
@@ -353,7 +325,8 @@ def advance(session_id, user_text):
             "sources": rag["sources"],
             "mode": rag["mode"],
         })
-        out["messages"].insert(0, {"kind": "text", "text": _fmt(_pick(session, "found_leads"), session)})
+        if rag["mode"] != "smalltalk":
+            out["messages"].insert(0, {"kind": "text", "text": _fmt(_pick(session, "found_leads"), session)})
         return out
 
     return _render(session)
