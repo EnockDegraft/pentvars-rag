@@ -12,6 +12,7 @@ answer_question(question) -> dict:
        the API layer / frontend can display citations.
 """
 import os
+import re
 import sys
 
 import chromadb
@@ -25,7 +26,15 @@ ROOT = os.path.dirname(HERE)
 CHROMA_DIR = os.path.join(ROOT, "data", "chroma_db")
 COLLECTION_NAME = "pentvars_knowledge_base"
 
-TOP_K = 4                      # how many chunks to retrieve
+TOP_K = 8                      # how many chunks to retrieve
+#
+# 8 rather than a tighter 3-4: on this small knowledge base the MiniLM
+# embeddings cluster many generic "about the university" chunks close
+# together, so the single on-point document for a question (e.g. the
+# programme list for "what programmes are offered?") can sit at rank 5-6.
+# The distance threshold below still filters out genuinely off-topic
+# chunks, and the LLM prompt tells the model to use only what's relevant
+# and to cite it, so a few extra near-misses in context are harmless.
 
 # Chunks weaker (further away) than this are treated as "not relevant", which
 # is how off-topic questions ("what's the capital of France?") get rejected
@@ -119,10 +128,30 @@ def answer_question(question: str, source: str = None) -> dict:
 
     answer_text, mode = generate_answer(question, chunks)
 
+    # Models sometimes cite with full-width / CJK brackets ("【2】"); fold
+    # them back to "[2]" so both the reader and the citation parser below
+    # see a consistent form.
+    if mode == "groq":
+        answer_text = re.sub(r"[［【]\s*(\d+)\s*[］】]", r"[\1]", answer_text)
+
+    # We retrieve a wide net (TOP_K) for the model, but only show the
+    # documents the answer actually rests on:
+    #  - groq: the excerpts the model cited as [1], [2], ... (fall back to
+    #    the 3 nearest if it cited nothing);
+    #  - extractive fallback: the single excerpt that was shown.
+    if mode == "groq":
+        cited = sorted({
+            int(n) - 1 for n in re.findall(r"\[(\d+)\]", answer_text)
+        })
+        cited = [i for i in cited if 0 <= i < len(chunks)]
+        shown = [chunks[i] for i in cited] if cited else chunks[:3]
+    else:
+        shown = chunks[:1]
+
     # de-duplicated source list, in the order first referenced
     seen = set()
     sources = []
-    for c in chunks:
+    for c in shown:
         title = c["metadata"]["title"]
         source_file = c["metadata"]["source"]
         if source_file not in seen:
