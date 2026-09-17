@@ -40,7 +40,7 @@ configuration.
 
 ## Project structure
 
-```
+```python
 pentvars-rag/
 ├── README.md
 ├── requirements.txt
@@ -110,7 +110,7 @@ self-contained file — swapping in any other OpenAI-compatible free API
 uvicorn backend.main:app --reload --port 8000
 ```
 
-Then open **http://localhost:8000/** in a browser. That's it — the FastAPI
+Then open **<http://localhost:8000/>** in a browser. That's it — the FastAPI
 app serves both the API and the chat page, so there's nothing else to start.
 
 ## Deploy it online
@@ -171,6 +171,7 @@ The chat page opens a **guided flow**:
    as a one-off without losing your place.
 
 Free-text questions to try:
+
 - "What are the entry requirements for Pentecost University?"
 - "How much is tuition and are there scholarships?"
 - "How do I request an official transcript?"
@@ -257,3 +258,8 @@ have a real, runnable system to demonstrate alongside the written work. The
 guided flow (sign-in → menu → scholarship / issue branches) shows how the
 same retrieval core sits underneath a structured, task-oriented assistant
 rather than only a free-text search box.
+
+python -m venv .
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe backend\ingest.py
+.\.venv\Scripts\python.exe -m uvicorn backend.main:app --reload --port 8000 --env-file .env
