@@ -13,9 +13,17 @@ capped, so it can't grow without bound. If this were ever deployed for real,
 this is the one place to swap in Redis or a database.
 
 Public API:
-    start_session()                -> (session_id, render_dict)
+    start_session(identity=None)   -> (session_id, render_dict)
     advance(session_id, user_text) -> render_dict
-    get_profile(session_id)        -> {name, index_number} or None
+    get_profile(session_id)        -> {name, index_number, role} or None
+
+`identity`, when passed to start_session(), is the {role, name, index_number,
+password} dict the frontend's guest/student/admin sign-in screen already
+collected. A valid identity skips the "welcome"/"ask_index" scripted
+questions entirely (they'd just be re-asking what the frontend already has)
+and drops the session straight onto "main_menu". An identity that's missing
+or fails validation is ignored and the session falls back to the classic
+in-chat sign-in, so the flow still works for any client that doesn't send one.
 
 `render_dict` is what the frontend needs to draw the next turn:
     {
@@ -73,7 +81,7 @@ def get_profile(session_id):
     s = _SESSIONS.get(session_id)
     if not s:
         return None
-    return {"name": s["name"], "index_number": s["index_number"]}
+    return {"name": s["name"], "index_number": s["index_number"], "role": s.get("role")}
 
 
 def _log_login(session):
@@ -85,6 +93,7 @@ def _log_login(session):
                 "session_id": session["id"],
                 "name": session["name"],
                 "index_number": session["index_number"],
+                "role": session.get("role"),
             }) + "\n")
     except Exception:
         pass  # logging is best-effort; never break a session over it
@@ -203,6 +212,19 @@ def _resolve_node(node_id):
 
 # --- rendering --------------------------------------------------------
 
+def _signed_in_line(session):
+    """The one-off greeting shown when main_menu is first reached. Only a
+    student has a real index number worth repeating back; guests and admins
+    just get acknowledged by name (or not at all, if we somehow got here
+    with no name yet)."""
+    first_name = session.get("first_name") or "there"
+    if session.get("role") == "student" and session.get("index_number"):
+        return f"You're all set, {first_name} — signed in as {session['index_number']}."
+    if session.get("name"):
+        return f"You're all set, {first_name}."
+    return ""
+
+
 def _fmt(text, session, **extra):
     ctx = {
         "name": session.get("name") or "there",
@@ -210,6 +232,7 @@ def _fmt(text, session, **extra):
         "index_number": session.get("index_number") or "",
         "greeting": _greeting(),
         "topic": "",
+        "signed_in_line": _signed_in_line(session),
     }
     ctx.update(extra)
     try:
@@ -254,7 +277,9 @@ def _render(session, extra_messages=None):
         if node_id == "main_menu":
             session["_seen_menu"] = True
         for line in _as_list(node.get("say")):
-            messages.append({"kind": "text", "text": _fmt(line, session)})
+            text = _fmt(line, session)
+            if text.strip():
+                messages.append({"kind": "text", "text": text})
 
     render = {
         "session_id": session["id"],
@@ -264,7 +289,7 @@ def _render(session, extra_messages=None):
         "expect": node["expect"],
         "prompt": _fmt(node.get("prompt", ""), session),
         "hint": node.get("hint"),
-        "profile": {"name": session["name"], "index_number": session["index_number"]},
+        "profile": {"name": session["name"], "index_number": session["index_number"], "role": session.get("role")},
     }
     if node["expect"] == "choice":
         render["options"] = [
@@ -282,17 +307,58 @@ def _as_list(value):
 
 # --- public entry points -------------------------------------------------
 
-def start_session():
+def start_session(identity=None):
     _sweep()
     session_id = uuid.uuid4().hex
     session = {
         "id": session_id,
         "name": None,
+        "first_name": None,
         "index_number": None,
+        "role": None,
         "node": START_NODE,
         "created_at": time.time(),
         "last_seen": time.time(),
     }
+
+    if identity:
+        role = (identity.get("role") or "").strip().lower()
+        raw_name = (identity.get("name") or "").strip()
+        raw_index = (identity.get("index_number") or "").strip()
+
+        signed_in = False
+        if role == "guest" and raw_name:
+            ok, cleaned, _ = _validate("name", raw_name)
+            if ok:
+                session["name"] = cleaned
+                session["first_name"] = cleaned.split()[0]
+                session["role"] = "guest"
+                signed_in = True
+
+        elif role == "student" and raw_name and raw_index:
+            ok_name, cleaned_name, _ = _validate("name", raw_name)
+            ok_idx, cleaned_idx, _ = _validate("index_number", raw_index)
+            if ok_name and ok_idx:
+                session["name"] = cleaned_name
+                session["first_name"] = cleaned_name.split()[0]
+                session["index_number"] = cleaned_idx
+                session["role"] = "student"
+                signed_in = True
+
+        elif role == "admin" and identity.get("password"):
+            # The sign-in screen only collects a password for admins, no
+            # name field — server-side password verification isn't wired up
+            # yet, this just honours the frontend's gate and skips the
+            # redundant chat questions.
+            session["name"] = raw_name or "Administrator"
+            session["first_name"] = session["name"].split()[0]
+            session["role"] = "admin"
+            signed_in = True
+
+        if signed_in:
+            session["node"] = "main_menu"
+            _log_login(session)
+
     _SESSIONS[session_id] = session
     return session_id, _render(session)
 
@@ -322,6 +388,7 @@ def advance(session_id, user_text):
             if node["store"] == "name":
                 session["first_name"] = user_text.split()[0]
             if node["store"] == "index_number" and session.get("name"):
+                session["role"] = "student"
                 _log_login(session)
 
         extra = []

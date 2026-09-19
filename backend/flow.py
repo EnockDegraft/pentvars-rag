@@ -94,7 +94,7 @@ NODES = {
         "next": "main_menu",
     },
     "main_menu": {
-        "say": "You're all set, {first_name} — signed in as {index_number}.",
+        "say": "{signed_in_line}",
         "prompt": "What would you like help with today?",
         "expect": "choice",
         "options": [

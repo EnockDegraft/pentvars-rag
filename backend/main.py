@@ -15,8 +15,10 @@ Then open http://localhost:8000/ in a browser.
 import os
 import sys
 import json
+from typing import Optional
+from urllib.parse import unquote
 
-from fastapi import FastAPI, HTTPException
+from fastapi import Body, Cookie, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -53,6 +55,18 @@ class FlowNextRequest(BaseModel):
     input: str = ""
 
 
+class Identity(BaseModel):
+    """Captured by the frontend's guest/student/admin sign-in screen."""
+    role: Optional[str] = None
+    name: Optional[str] = None
+    index_number: Optional[str] = None
+    password: Optional[str] = None
+
+
+class FlowStartRequest(BaseModel):
+    identity: Optional[Identity] = None
+
+
 @app.get("/api/health")
 def health():
     embedding_backend = "not indexed yet"
@@ -76,9 +90,33 @@ def ask(payload: AskRequest):
 
 
 @app.post("/api/flow/start")
-def flow_start():
-    """Begin a new guided session. Returns the first turn to render."""
-    _, render = flow_engine.start_session()
+def flow_start(
+    payload: Optional[FlowStartRequest] = Body(default=None),
+    pu_rag_identity: Optional[str] = Cookie(default=None),
+):
+    """Begin a new guided session. Returns the first turn to render.
+
+    Optionally accepts {"identity": {"role", "name", "index_number", "password"}}
+    captured by the frontend's guest/student/admin sign-in screen. When a
+    valid identity is supplied, the session skips straight past the
+    name/index-number questions (already collected up front) and opens on
+    the main menu. Missing/invalid identity falls back to the classic
+    scripted sign-in questions, so older clients keep working unchanged.
+
+    The frontend persists that identity in a `pu_rag_identity` cookie (not
+    localStorage), so a returning visitor's browser sends it automatically
+    with this request even if the client forgets to include it in the body.
+    An explicit body identity, if present, takes priority over the cookie.
+    """
+    identity = None
+    if payload and payload.identity:
+        identity = payload.identity.dict()
+    elif pu_rag_identity:
+        try:
+            identity = json.loads(unquote(pu_rag_identity))
+        except (ValueError, TypeError):
+            identity = None
+    _, render = flow_engine.start_session(identity)
     return render
 
 
