@@ -28,6 +28,16 @@ the current downloadable calendar on
 https://pentvars.edu.gh/academics/academic-calender/ or the noticeboards
 rather than relying on last year's dates.
 
+## Examination timetable
+The examination timetable (which paper is when, and in which venue) is
+published ahead of each examination period alongside the academic
+calendar — on the e-portal and campus noticeboards. Per the official
+Students' Examination Guide, checking it is the student's own
+responsibility: **"Ensure you check your timetable carefully. It is the
+responsibility of students to ensure they know the correct date, time and
+venues for all their examinations."** Arriving more than 30 minutes late
+to a paper means no admission to that examination at all.
+
 ## Typical rhythm each semester/trimester
 Registration opens → registration deadline → add/drop period → teaching
 weeks → revision week → examinations → results (provisional, then
@@ -35,4 +45,4 @@ confirmed after Academic Board approval) → break. Resit/supplementary
 examinations for failed papers are scheduled before the next academic
 period and are registered and paid for separately.
 
-Source: https://pentvars.edu.gh/academics/academic-calender/ , https://pentvars.edu.gh/academics/sessions-schools/
+Source: https://pentvars.edu.gh/academics/academic-calender/ , https://pentvars.edu.gh/academics/sessions-schools/ , https://pentvars.edu.gh/wp-content/uploads/2022/08/EXAMINATION-GUIDE-FOR-STUDENTS.pdf

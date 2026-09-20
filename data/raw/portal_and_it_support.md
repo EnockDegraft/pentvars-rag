@@ -59,9 +59,29 @@ correspondence, including scholarship and results notifications.
 ## Contacting ICT
 - Email: ict@pentvars.edu.gh
 - Phone: +233 30 241 7057 / 7058
+- Digital Services Unit support lines: +233 24 490 6386 / +233 24 597 0073,
+  and a 24-hour WhatsApp-only support chatline (find the current chat link
+  on the e-portal/admission portal login help page).
 - In person: ICT Directorate, main campus, during working hours. Bring your
   student ID.
 - Include your name, index number, a description of the problem, and a
   screenshot of any error message.
 
-Source: https://pentvars.edu.gh/ and https://eportal.pentvars.edu.gh
+## Reporting other campus problems
+ICT is only for portal/LMS/wifi/email issues. For anything else, the right
+first stop depends on what's wrong:
+- **Hall/hostel issue** (plumbing, electricity, safety, roommate conflict):
+  the Hall Warden or Senior Resident first; unresolved matters go to the
+  Dean of Students.
+- **General welfare, safety, or a dispute with another student**: the
+  Office of the Dean of Student Affairs (ODSA).
+- **Library issue** (catalogue, access, a book problem): library@pentvars.edu.gh.
+- **Suspected criminal conduct or a security concern**: campus security —
+  students must be ready to show their ID card to security on request at
+  any time; serious matters are also reportable to the Ghana Police Service.
+- Not sure who owns it? Start with the Dean of Students' office or the main
+  reception line (+233 30 241 7057 / 8) and ask to be redirected — that's
+  the University's general front door for anything that doesn't have an
+  obvious department.
+
+Source: https://pentvars.edu.gh/ , https://eportal.pentvars.edu.gh , http://its.pentvars.edu.gh/admission/ and https://pentvars.edu.gh/wp-content/uploads/dlm_uploads/2018/05/PUC_GRADUATE_SCHOOL_POLICIES_AND_PROCEDURES.pdf

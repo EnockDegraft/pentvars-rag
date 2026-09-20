@@ -25,6 +25,16 @@ identity problems, learning difficulties, relationships, marriage and
 family, gender issues, sexual abuse and violence, phobias, panic attacks,
 addiction, health issues, and workplace issues.
 
+This is also the right place for study-related struggles that aren't a
+crisis — **struggling to understand or keep up with a course**,
+**procrastination and poor time management**, and **exam-related stress
+or panic** all fall under its academic and personal counselling remit
+(academic counselling covers study habits directly; panic attacks and
+anxiety are explicitly listed above). For a course you're specifically
+struggling with, also talk to the course lecturer directly and your
+mentor (see Mentorship Programme below) — they can point you to tutorials,
+extra help, or whether a re-sit/retake is realistically needed.
+
 - The unit keeps the **highest level of confidentiality**. With the
   client's permission, difficult cases are referred to an appropriate
   specialist.

@@ -12,6 +12,18 @@
    for a course that is not on this slip, and you may not sit its
    examination.
 
+## What you need on hand to register
+- Your **student index number and e-portal login** (issued at admission —
+  see the Student Portal and IT Support page if you've lost access).
+- Proof that fees are paid to at least the 70% threshold — the portal
+  checks this automatically, so have your payment reference handy in case
+  Finance needs to look it up.
+- Continuing students registering a resit/referral course should also have
+  the **Resit Course Registration Form** (available on the Resources page).
+- New/first-year students still need the documents from their admission
+  checklist (see Entry Requirements) sorted out at orientation before
+  their first registration.
+
 ## Common registration problems
 - **Registration is closed / blocked**: an outstanding balance, an
   unreconciled payment, or the registration window has ended. Check your
@@ -57,4 +69,4 @@
   +233 30 241 7057 / 7058.
 - Registrar's Office (deferment/withdrawal): registry@pentvars.edu.gh.
 
-Source: https://pentvars.edu.gh/ and https://eportal.pentvars.edu.gh
+Source: https://pentvars.edu.gh/ , https://eportal.pentvars.edu.gh and https://pentvars.edu.gh/resources/
