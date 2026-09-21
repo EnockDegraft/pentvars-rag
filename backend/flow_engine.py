@@ -363,6 +363,29 @@ def start_session(identity=None):
     return session_id, _render(session)
 
 
+_QUESTION_LEAD_WORDS = {
+    "what", "when", "where", "why", "who", "whom", "whose", "which", "how",
+    "can", "could", "do", "does", "did", "is", "are", "will", "would",
+    "should", "tell", "give", "show", "explain", "list",
+}
+
+
+def _looks_like_a_question(text):
+    """Heuristic used only when a name/index-number field fails validation:
+    is this actually a real question the student typed instead of an
+    attempt at the field, rather than just a typo'd name or index number?
+    A genuine name/index almost never starts with a question/imperative
+    word or contains a "?", and is rarely 4+ words long."""
+    t = text.strip()
+    if not t:
+        return False
+    if "?" in t:
+        return True
+    words = t.split()
+    first_word = words[0].strip(".,!").lower()
+    return first_word in _QUESTION_LEAD_WORDS and len(words) >= 4
+
+
 def advance(session_id, user_text):
     session = _get(session_id)
     _sweep()
@@ -377,6 +400,26 @@ def advance(session_id, user_text):
     # ---- text nodes: validate, store, maybe run RAG, then advance -------
     if node["expect"] == "text":
         if node.get("validate"):
+            # Check this before validation, not just on failure: name
+            # validation is deliberately loose (almost any text with a
+            # letter "passes" as a name), so a typed question like "What
+            # are the GPA classifications?" would otherwise sail through
+            # and get stored as someone's first name instead of answered.
+            if _looks_like_a_question(user_text):
+                rag = answer_question(user_text)
+                out = _render(session)
+                out["messages"].insert(0, {
+                    "kind": "answer",
+                    "answer": rag["answer"],
+                    "sources": rag["sources"],
+                    "mode": rag["mode"],
+                })
+                if rag["mode"] != "smalltalk":
+                    out["messages"].insert(0, {
+                        "kind": "text",
+                        "text": _fmt(_pick(session, "found_leads"), session),
+                    })
+                return out
             ok, cleaned, msg = _validate(node["validate"], user_text)
             if not ok:
                 out = _render(session)
